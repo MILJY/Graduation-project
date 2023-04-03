@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/config">
+        <file>Server.config</file>
+    </qresource>
+</RCC>
