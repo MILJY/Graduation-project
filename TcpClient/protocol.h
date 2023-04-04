@@ -3,6 +3,18 @@
 #include <iostream>
 #define uint unsigned int
 
+
+#define Register_Success "Register Success"   //注册成功
+#define Register_Account_Existence "Register Account Existence" //注册时用户名已经存在
+#define Register_Fail "Register Fail" //注册失败
+
+enum MSG_TYPE
+{
+    MSG_TYPE_MIN = 0,
+    MSG_TYPE_REGIST_REQUEST,//注册请求
+    MSG_TYPE_REGIST_RESPOND,//注册回复
+    MSG_TYPE_MAX = 0x00ffffff,
+};
 struct PDU//通讯协议
 {
     uint pdu_len;//总的协议数据单元的大小

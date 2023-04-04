@@ -17,12 +17,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    mysql.cpp \
     mytcpserver.cpp \
     mytcpsocket.cpp \
     protocol.cpp \
     tcpserver.cpp
 
 HEADERS += \
+    mysql.h \
     mytcpserver.h \
     mytcpsocket.h \
     protocol.h \
