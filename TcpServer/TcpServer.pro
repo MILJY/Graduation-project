@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -17,9 +17,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    mytcpserver.cpp \
+    mytcpsocket.cpp \
+    protocol.cpp \
     tcpserver.cpp
 
 HEADERS += \
+    mytcpserver.h \
+    mytcpsocket.h \
+    protocol.h \
     tcpserver.h
 
 FORMS += \

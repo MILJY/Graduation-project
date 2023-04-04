@@ -3,9 +3,8 @@
 
 #include <QWidget>
 #include <QFile>
-#include <QtDebug>
+#include <QDebug>
 #include <QMessageBox>
-#include <QTcpSocket>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class TcpServer; }
@@ -18,8 +17,11 @@ class TcpServer : public QWidget
 public:
     TcpServer(QWidget *parent = nullptr);
     ~TcpServer();
+    void LoadConfig();
 
 private:
     Ui::TcpServer *ui;
+    QString m_ip;
+    quint16 m_port;
 };
 #endif // TCPSERVER_H

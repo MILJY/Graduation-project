@@ -23,6 +23,10 @@ public:
 public slots:
     void ShowConnect();
 
+private slots:
+
+    void on_send_msg_clicked();
+
 private:
     Ui::TcpClient *ui;
     QString m_ip;

@@ -1,6 +1,6 @@
 #include "tcpclient.h"
 #include "ui_tcpclient.h"
-
+#include "protocol.h"
 TcpClient::TcpClient(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::TcpClient)
@@ -42,5 +42,26 @@ void TcpClient::LoadConfig()
     else
     {
         QMessageBox::critical(this,"open config", "open config fail");
+    }
+}
+
+
+void TcpClient::on_send_msg_clicked()
+{
+    qDebug() << "clicked";
+    QString str_msg = ui->lineEdit->text();
+    if(str_msg.isEmpty())
+    {
+        QMessageBox::warning(this, "Send Message", "Send Message Cannot Be Empty!");
+    }
+    else
+    {
+        PDU *pdu = mkPDU(str_msg.size());
+        pdu->msg_type = 8888;
+        strcpy((char *)pdu->ca_msg, str_msg.toStdString().c_str());
+        qDebug() << pdu->pdu_len << pdu->msg_type << pdu->ca_data << pdu->msg_len << (char *)pdu->ca_msg;
+        m_tcpsocket.write((char *)pdu, pdu->pdu_len);
+        free(pdu);
+        pdu = NULL;
     }
 }
