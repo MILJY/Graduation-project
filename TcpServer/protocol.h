@@ -10,6 +10,10 @@
 #define Login_Success "Login Success" //登录成功
 #define Login_Fail "Login Fail" //登录失败
 
+#define Search_User_Online "User Online" //查找用户在线
+#define Search_User_Offline "User Offline"  //查找用户离线
+#define Search_User_fail "Account Does Not Exist"  //查找用户不存在
+
 enum MSG_TYPE
 {
     MSG_TYPE_MIN = 0,
@@ -17,6 +21,12 @@ enum MSG_TYPE
     MSG_TYPE_REGIST_RESPOND,//注册回复
     MSG_TYPE_LOGIN_REQUEST,//登录请求
     MSG_TYPE_LOGIN_RESPOND,//登录回复
+    MSG_TYPE_SEARCH_ONLINE_USER_REQUEST,//查找所有在线用户请求
+    MSG_TYPE_SEARCH_ONLINE_USER_RESPOND,//查找所有在线用户响应
+    MSG_TYPE_SERACH_USER_REQUEST,//查找用户请求
+    MSG_TYPE_SERACH_USER_RESPOND,//查找用户响应
+    MSG_TYPE_ADD_USER_REQUEST,//添加好友请求
+    MSG_TYPE_ADD_USER_RESPOND,//添加好友响应
     MSG_TYPE_MAX = 0x00ffffff,
 };
 struct PDU//通讯协议

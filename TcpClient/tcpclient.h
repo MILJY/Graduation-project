@@ -17,7 +17,10 @@ class TcpClient : public QWidget
 public:
     TcpClient(QWidget *parent = nullptr);
     ~TcpClient();
-    void LoadConfig();
+    void LoadConfig();//加载资源文件
+    static TcpClient& ins();
+    QTcpSocket &GetTcpSocket();
+    QString GetLoginName();
 private:
     void SendMsgToServer(uint msg_type);
 public slots:
@@ -37,5 +40,6 @@ private:
     QString m_ip;
     quint16 m_port;
     QTcpSocket m_tcpsocket;
+    QString login_name;//当前登录的用户名
 };
 #endif // TCPCLIENT_H

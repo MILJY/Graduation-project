@@ -68,10 +68,39 @@ bool MySql::HandleLogin(const QString name, const QString pwd)
 
 bool MySql::HandleClientOffline(const QString name)
 {
-    qDebug() << name;
     if(name == NULL)
         return false;
     QString m_sql = QString("update userinfo set online = 0 where name = \'%1\'").arg(name);
     QSqlQuery offline_query;
     return offline_query.exec(m_sql);
+}
+
+QStringList MySql::HandleSearchOnlineUser()
+{
+    QStringList result;
+    result.clear();
+    QString m_sql = QString("select name from userinfo where online = 1");
+    QSqlQuery search_query;
+    search_query.exec(m_sql);
+    while(search_query.next())
+    {
+        result.append(search_query.value(0).toString());
+    }
+    return result;
+}
+
+int MySql::HandleSearchUser(const QString name)
+{
+    if(name == NULL)
+        return -1;
+    QString m_sql = QString("select online from userinfo where name = \'%1\'").arg(name);
+    QSqlQuery search_query;
+    search_query.exec(m_sql);
+    if(search_query.next())
+    {
+        search_query.value(0).toInt();
+        return search_query.value(0).toInt();
+    }
+    else
+        return -1;
 }

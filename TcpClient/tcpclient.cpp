@@ -1,14 +1,17 @@
 #include "tcpclient.h"
 #include "ui_tcpclient.h"
 #include "protocol.h"
+#include "mainwindow.h"
+#include "onlineuser.h"
+#include "friendchat.h"
 TcpClient::TcpClient(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
     LoadConfig();
-    connect(&m_tcpsocket, SIGNAL(readyRead()), this, SLOT(ReceiveInfo()));
-    connect(&m_tcpsocket, SIGNAL(connected()), this, SLOT(ShowConnect()));
+    connect(&m_tcpsocket, SIGNAL(readyRead()), this, SLOT(ReceiveInfo()));//收信息
+    connect(&m_tcpsocket, SIGNAL(connected()), this, SLOT(ShowConnect()));//与服务端连接
     m_tcpsocket.connectToHost(m_ip, m_port);
 }
 
@@ -50,10 +53,36 @@ void TcpClient::ReceiveInfo()
         if(strcmp(pdu->ca_data, Login_Success) == 0)
         {
             QMessageBox::information(this, "Login", Login_Success);
+            MainWindow::ins().show();
+            this->hide();
         }
         else
         {
             QMessageBox::critical(this, "Login", Login_Fail);
+        }
+        break;
+    }
+    case MSG_TYPE_SEARCH_ONLINE_USER_RESPOND:
+    {
+        OnlineUser::ins().SHowOnlineUser(pdu);
+        break;
+    }
+    case MSG_TYPE_SERACH_USER_RESPOND:
+    {
+        if(strcmp(pdu->ca_data, Search_User_fail) == 0)
+        {
+            QMessageBox::information(this, "查找用户", QString("%1 does not exist!").arg(FriendChat::ins().search_name));
+        }
+        else
+        {
+            if(strcmp(pdu->ca_data, Search_User_Online) == 0)
+            {
+                QMessageBox::information(this, "查找用户", QString("%1 online!").arg(FriendChat::ins().search_name));
+            }
+            else
+            {
+                QMessageBox::information(this, "查找用户", QString("%1 offline!").arg(FriendChat::ins().search_name));
+            }
         }
         break;
     }
@@ -89,14 +118,34 @@ void TcpClient::LoadConfig()
     }
 }
 
+TcpClient &TcpClient::ins()
+{
+    static TcpClient instance;
+    return instance;
+}
+
+QTcpSocket &TcpClient::GetTcpSocket()
+{
+    return m_tcpsocket;
+}
+
+QString TcpClient::GetLoginName()
+{
+    return login_name;
+}
+
 void TcpClient::SendMsgToServer(uint msg_type)
 {
     QString str_name = ui->edit_name->text();
+
     QString str_pwd = ui->edit_password->text();
     if(str_name.isEmpty() || str_pwd.isEmpty())
     {
         if(msg_type == MSG_TYPE_LOGIN_REQUEST)
+        {
+            login_name = str_name;
             QMessageBox::critical(this, "Login", "Login Fail: Account And Password Cannot Be Empty");
+        }
         if(msg_type == MSG_TYPE_REGIST_REQUEST)
             QMessageBox::critical(this, "Register", "Register Fail: Account And Password Cannot Be Empty");
 
