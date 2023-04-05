@@ -29,19 +29,36 @@ void TcpClient::ReceiveInfo()
     PDU *pdu = mkPDU(msg_len);
     m_tcpsocket.read((char *)pdu + sizeof(uint), pdu_len - sizeof(uint));
     //qDebug() << pdu->pdu_len << pdu->msg_type << pdu->ca_data << pdu->msg_len << (char *)pdu->ca_msg;
-
-    //qDebug() << str_name << str_pwd << pdu->msg_type;
-    if(pdu->msg_type == MSG_TYPE_REGIST_RESPOND)
+    switch(pdu->msg_type)
     {
-        QMessageBox::information(this, "Register", pdu->ca_data);
-        /*if(strcmp(pdu->ca_data, Register_Success) == 0)
+    //注册
+    case MSG_TYPE_REGIST_RESPOND:
+    {
+        if(strcmp(pdu->ca_data, Register_Success) == 0)
         {
-            QMessageBox::information(this, "Register", "Register Success");
+            QMessageBox::information(this, "Register", Register_Success);
         }
         else
         {
-
-        }*/
+            QMessageBox::critical(this, "Register", Register_Fail);
+        }
+        break;
+    }
+    //登录
+    case MSG_TYPE_LOGIN_RESPOND:
+    {
+        if(strcmp(pdu->ca_data, Login_Success) == 0)
+        {
+            QMessageBox::information(this, "Login", Login_Success);
+        }
+        else
+        {
+            QMessageBox::critical(this, "Login", Login_Fail);
+        }
+        break;
+    }
+    default:
+            break;
     }
     free(pdu);
     pdu = NULL;
@@ -72,59 +89,39 @@ void TcpClient::LoadConfig()
     }
 }
 
-/*用于测试
-void TcpClient::on_send_msg_clicked()
-{
-    qDebug() << "clicked";
-    QString str_msg = ui->lineEdit->text();
-    if(str_msg.isEmpty())
-    {
-        QMessageBox::warning(this, "Send Message", "Send Message Cannot Be Empty!");
-    }
-    else
-    {
-        PDU *pdu = mkPDU(str_msg.size());
-        pdu->msg_type = 8888;
-        strcpy((char *)pdu->ca_msg, str_msg.toStdString().c_str());
-        qDebug() << pdu->pdu_len << pdu->msg_type << pdu->ca_data << pdu->msg_len << (char *)pdu->ca_msg;
-        m_tcpsocket.write((char *)pdu, pdu->pdu_len);
-        free(pdu);
-        pdu = NULL;
-    }
-}
-*/
-void TcpClient::on_login_btn_clicked()
+void TcpClient::SendMsgToServer(uint msg_type)
 {
     QString str_name = ui->edit_name->text();
     QString str_pwd = ui->edit_password->text();
     if(str_name.isEmpty() || str_pwd.isEmpty())
     {
-        QMessageBox::critical(this, "Login", "Login Fail: Account And Password Cannot Be Empty");
-    }
-    else
-    {
+        if(msg_type == MSG_TYPE_LOGIN_REQUEST)
+            QMessageBox::critical(this, "Login", "Login Fail: Account And Password Cannot Be Empty");
+        if(msg_type == MSG_TYPE_REGIST_REQUEST)
+            QMessageBox::critical(this, "Register", "Register Fail: Account And Password Cannot Be Empty");
 
-    }
-}
-
-void TcpClient::on_register_btn_clicked()
-{
-    QString str_name = ui->edit_name->text();
-    QString str_pwd = ui->edit_password->text();
-    if(str_name.isEmpty() || str_pwd.isEmpty())
-    {
-        QMessageBox::critical(this, "Register", "Register Fail: Account And Password Cannot Be Empty");
     }
     else
     {
         PDU *pdu = mkPDU(0);
-        pdu->msg_type = MSG_TYPE_REGIST_REQUEST;
+        pdu->msg_type = msg_type;
         strncpy(pdu->ca_data, str_name.toStdString().c_str(), 32);
         strncpy(pdu->ca_data + 32, str_pwd.toStdString().c_str(), 32);
         m_tcpsocket.write((char *)pdu, pdu->pdu_len);
         free(pdu);
         pdu = NULL;
     }
+}
+
+
+void TcpClient::on_login_btn_clicked()
+{
+    SendMsgToServer(MSG_TYPE_LOGIN_REQUEST);
+}
+
+void TcpClient::on_register_btn_clicked()
+{
+    SendMsgToServer(MSG_TYPE_REGIST_REQUEST);
 }
 
 void TcpClient::on_logout_btn_clicked()

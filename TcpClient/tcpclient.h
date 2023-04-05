@@ -18,14 +18,13 @@ public:
     TcpClient(QWidget *parent = nullptr);
     ~TcpClient();
     void LoadConfig();
-
+private:
+    void SendMsgToServer(uint msg_type);
 public slots:
     void ShowConnect();//接收连接服务端的connect信号
     void ReceiveInfo();//接收服务端发送的信息
 
 private slots:
-
-    //void on_send_msg_clicked();
 
     void on_login_btn_clicked();
 

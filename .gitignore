@@ -71,3 +71,5 @@ Thumbs.db
 *.dll
 *.exe
 
+build-TcpClient-Desktop_Qt_5_9_9_MSVC2017_64bit-Debug
+build-TcpServer-Desktop_Qt_5_9_9_MSVC2017_64bit-Debug

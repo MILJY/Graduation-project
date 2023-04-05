@@ -15,6 +15,8 @@ public:
     static MySql& ins();
     void init();
     bool HandleRegister(const QString name, const QString pwd);
+    bool HandleLogin(const QString name, const QString pwd);
+    bool HandleClientOffline(const QString name);
 signals:
 
 private:
