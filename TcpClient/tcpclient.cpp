@@ -1,6 +1,5 @@
 #include "tcpclient.h"
 #include "ui_tcpclient.h"
-#include "protocol.h"
 #include "mainwindow.h"
 #include "onlineuser.h"
 #include "friendchat.h"
@@ -37,29 +36,14 @@ void TcpClient::ReceiveInfo()
     //注册
     case MSG_TYPE_REGIST_RESPOND:
     {
-        if(strcmp(pdu->ca_data, Register_Success) == 0)
-        {
-            QMessageBox::information(this, "Register", Register_Success);
-        }
-        else
-        {
-            QMessageBox::critical(this, "Register", Register_Fail);
-        }
+        HandleRegistRespond(pdu);
+
         break;
     }
     //登录
     case MSG_TYPE_LOGIN_RESPOND:
     {
-        if(strcmp(pdu->ca_data, Login_Success) == 0)
-        {
-            QMessageBox::information(this, "Login", Login_Success);
-            MainWindow::ins().show();
-            this->hide();
-        }
-        else
-        {
-            QMessageBox::critical(this, "Login", Login_Fail);
-        }
+        HandleLoginRespond(pdu);
         break;
     }
     case MSG_TYPE_SEARCH_ONLINE_USER_RESPOND:
@@ -69,21 +53,37 @@ void TcpClient::ReceiveInfo()
     }
     case MSG_TYPE_SERACH_USER_RESPOND:
     {
-        if(strcmp(pdu->ca_data, Search_User_fail) == 0)
-        {
-            QMessageBox::information(this, "查找用户", QString("%1 does not exist!").arg(FriendChat::ins().search_name));
-        }
-        else
-        {
-            if(strcmp(pdu->ca_data, Search_User_Online) == 0)
-            {
-                QMessageBox::information(this, "查找用户", QString("%1 online!").arg(FriendChat::ins().search_name));
-            }
-            else
-            {
-                QMessageBox::information(this, "查找用户", QString("%1 offline!").arg(FriendChat::ins().search_name));
-            }
-        }
+        HandleSearchUserRespond(pdu);
+        break;
+    }
+    case MSG_TYPE_ADD_USER_RESPOND:
+    {
+        QMessageBox::information(this, "添加好友", pdu->ca_data);
+        break;
+    }
+    case MSG_TYPE_ADD_USER_REQUEST:
+    {
+        HandleAddUserRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_AGREE_ADD_USER:
+    {
+        QMessageBox::information(this, "添加好友结果", QString("%1 同意了你的申请！").arg(pdu->ca_data));
+        break;
+    }
+    case MSG_TYPE_REFUSE_ADD_USER:
+    {
+        QMessageBox::information(this, "添加好友结果", QString("%1 拒绝了你的申请！").arg(pdu->ca_data));
+        break;
+    }
+    case MSG_TYPE_FLUSH_FRIEND_LIST_RESPOND:
+    {
+        FriendChat::ins().FlushFriendList(pdu);
+        break;
+    }
+    case MSG_TYPE_DELETE_FRIEND_RESPOND:
+    {
+        QMessageBox::information(this, "删除好友", pdu->ca_data);
         break;
     }
     default:
@@ -143,7 +143,6 @@ void TcpClient::SendMsgToServer(uint msg_type)
     {
         if(msg_type == MSG_TYPE_LOGIN_REQUEST)
         {
-            login_name = str_name;
             QMessageBox::critical(this, "Login", "Login Fail: Account And Password Cannot Be Empty");
         }
         if(msg_type == MSG_TYPE_REGIST_REQUEST)
@@ -154,12 +153,78 @@ void TcpClient::SendMsgToServer(uint msg_type)
     {
         PDU *pdu = mkPDU(0);
         pdu->msg_type = msg_type;
+        login_name = str_name;
         strncpy(pdu->ca_data, str_name.toStdString().c_str(), 32);
         strncpy(pdu->ca_data + 32, str_pwd.toStdString().c_str(), 32);
         m_tcpsocket.write((char *)pdu, pdu->pdu_len);
         free(pdu);
         pdu = NULL;
     }
+}
+
+void TcpClient::HandleRegistRespond(PDU *pdu)
+{
+    if(strcmp(pdu->ca_data, Register_Success) == 0)
+    {
+        QMessageBox::information(this, "Register", Register_Success);
+    }
+    else
+    {
+        QMessageBox::critical(this, "Register", Register_Fail);
+    }
+}
+
+void TcpClient::HandleLoginRespond(PDU *pdu)
+{
+    if(strcmp(pdu->ca_data, Login_Success) == 0)
+    {
+
+        QMessageBox::information(this, "Login", Login_Success);
+        MainWindow::ins().show();
+        this->hide();
+    }
+    else
+    {
+        QMessageBox::critical(this, "Login", Login_Fail);
+    }
+}
+
+void TcpClient::HandleSearchUserRespond(PDU *pdu)
+{
+    if(strcmp(pdu->ca_data, Search_User_fail) == 0)
+    {
+        QMessageBox::information(this, "查找用户", QString("%1 does not exist!").arg(FriendChat::ins().search_name));
+    }
+    else
+    {
+        if(strcmp(pdu->ca_data, Search_User_Online) == 0)
+        {
+            QMessageBox::information(this, "查找用户", QString("%1 online!").arg(FriendChat::ins().search_name));
+        }
+        else
+        {
+            QMessageBox::information(this, "查找用户", QString("%1 offline!").arg(FriendChat::ins().search_name));
+        }
+    }
+}
+
+void TcpClient::HandleAddUserRequest(PDU *pdu)
+{
+    int res = QMessageBox::information(this, "添加好友请求", QString("%1 请求添加你为好友").arg(pdu->ca_data), QMessageBox::Ok, QMessageBox::No);
+    PDU *res_pdu= mkPDU(0);
+    if(res == QMessageBox::Ok)
+    {
+        res_pdu->msg_type = MSG_TYPE_AGREE_ADD_USER;
+    }
+    else
+    {
+        res_pdu->msg_type = MSG_TYPE_REFUSE_ADD_USER;
+    }
+    strcpy(res_pdu->ca_data, pdu->ca_data);
+    m_tcpsocket.write((char *)res_pdu, res_pdu->pdu_len);
+    free(res_pdu);
+    res_pdu = NULL;
+
 }
 
 

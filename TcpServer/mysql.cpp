@@ -28,6 +28,22 @@ void MySql::init()
     }
 }
 
+int MySql::GetIdByName(QString name)
+{
+    if(name == NULL)
+        return -1;
+    QString m_sql = QString("select id from userinfo where name = \'%1\'").arg(name);
+    QSqlQuery search_query;
+    search_query.exec(m_sql);
+    if(search_query.next())
+    {
+        search_query.value(0).toInt();
+        return search_query.value(0).toInt();
+    }
+    else
+        return -1;
+}
+
 bool MySql::HandleRegister(const QString name, const QString pwd)
 {
     if(name == NULL || pwd == NULL)
@@ -103,4 +119,70 @@ int MySql::HandleSearchUser(const QString name)
     }
     else
         return -1;
+}
+
+int MySql::HandleAddUser(const QString login_name, const QString friend_name)
+{
+    if(login_name == NULL || friend_name == NULL)
+        return -1;
+
+    QString m_sql = QString("select * from userfriend where (id = (select id from userinfo where name = \'%1\') and friendid = (select id from userinfo where name = \'%2\')) or (id = (select id from userinfo where name = \'%3\') and friendid = (select id from userinfo where name = \'%4\'));").arg(login_name).arg(friend_name).arg(friend_name).arg(login_name);
+    QSqlQuery search_query;
+    search_query.exec(m_sql);
+    if(search_query.next())
+    {
+        return 0;
+    }
+    else
+    {
+        m_sql = QString("select online from userinfo where name = \'%1\'").arg(friend_name);
+        search_query.exec(m_sql);
+        if(search_query.next())
+        {
+            int is_online = search_query.value(0).toInt();
+            return is_online + 2;
+        }
+        else
+            return 1;
+    }
+}
+
+void MySql::HandleAgreeAddUser(const QString login_name, const QString friend_name)
+{
+    if(login_name == NULL || friend_name == NULL)
+        return ;
+    int login_name_id = GetIdByName(login_name);
+    int friend_name_id = GetIdByName(friend_name);
+    QString m_sql = QString("insert into userfriend(id,friendid) values(%1,%2)").arg(login_name_id).arg(friend_name_id);
+    QSqlQuery query;
+    query.exec(m_sql);
+}
+
+QStringList MySql::HandleFlushFriendList(const QString name)
+{
+
+    QStringList result;
+    result.clear();
+    if(name == NULL)
+        return result;
+    int name_id = GetIdByName(name);
+    QString m_sql = QString("select name from userinfo where id in (select id from userfriend where friendid = %1) UNION (select name from userinfo where id in (select friendid from userfriend where id = %2))").arg(name_id).arg(name_id);
+    QSqlQuery query;
+    query.exec(m_sql);
+    while(query.next())
+    {
+        result.append(query.value(0).toString());
+    }
+    return result;
+}
+
+bool MySql::HandleDeleteFriend(const QString login_name, const QString friend_name)
+{
+    if(login_name == NULL || friend_name == NULL)
+        return false;
+    int login_name_id = GetIdByName(login_name);
+    int friend_name_id = GetIdByName(friend_name);
+    QString m_sql = QString("delete from userfriend where id in (%1,%2) and friendid in (%3,%4)").arg(login_name_id).arg(friend_name_id).arg(friend_name_id).arg(login_name_id);
+    QSqlQuery query;
+    return query.exec(m_sql);
 }

@@ -1,11 +1,12 @@
 #include "onlineuser.h"
 #include "ui_onlineuser.h"
-
+#include "tcpclient.h"
 OnlineUser::OnlineUser(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::OnlineUser)
 {
     ui->setupUi(this);
+    setWindowTitle(TcpClient::ins().GetLoginName());
 }
 
 OnlineUser::~OnlineUser()
@@ -32,4 +33,26 @@ void OnlineUser::SHowOnlineUser(PDU *pdu)
 
         ui->online_user->addItem(user_name);
     }
+}
+
+void OnlineUser::on_add_friend_clicked()
+{
+    QListWidgetItem *item = ui->online_user->currentItem();
+    QString friend_name = item->text();
+    if(friend_name == TcpClient::ins().GetLoginName())
+    {
+        QMessageBox::critical(this, "错误", "不能添加自己，操作失败！");
+    }
+    else
+    {
+        QString login_name = TcpClient::ins().GetLoginName();
+        PDU *pdu = mkPDU(0);
+        pdu->msg_type = MSG_TYPE_ADD_USER_REQUEST;
+        memcpy(pdu->ca_data, login_name.toStdString().c_str(), login_name.size());
+        memcpy(pdu->ca_data + 32, friend_name.toStdString().c_str(), friend_name.size());
+        TcpClient::ins().GetTcpSocket().write((char *)pdu, pdu->pdu_len);
+        free(pdu);
+        pdu = NULL;
+    }
+    hide();
 }

@@ -19,6 +19,19 @@ void MyTcpServer::incomingConnection(qintptr handle)
     connect(m_tcpsocket, SIGNAL(Offline(MyTcpSocket *)), this, SLOT(DeleteSocket(MyTcpSocket *)));
 }
 
+MyTcpSocket *MyTcpServer::GetTcpSocketByName(QString frient_name)
+{
+    QList<MyTcpSocket*>::iterator it = m_tcpsocket_list.begin();
+    for(; it != m_tcpsocket_list.end(); it++)
+    {
+        if((*it)->GetName() == frient_name)
+        {
+            return *it;
+        }
+    }
+    return NULL;
+}
+
 void MyTcpServer::DeleteSocket(MyTcpSocket *mytcpsocket)
 {
     qDebug() << m_tcpsocket_list.size();

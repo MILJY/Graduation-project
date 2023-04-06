@@ -6,6 +6,7 @@
 #include <QtDebug>
 #include <QMessageBox>
 #include <QTcpSocket>
+#include "protocol.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class TcpClient; }
 QT_END_NAMESPACE
@@ -23,6 +24,10 @@ public:
     QString GetLoginName();
 private:
     void SendMsgToServer(uint msg_type);
+    void HandleRegistRespond(PDU *pdu);//处理注册响应
+    void HandleLoginRespond(PDU *pdu);//处理登录响应
+    void HandleSearchUserRespond(PDU *pdu);//处理查找用户响应
+    void HandleAddUserRequest(PDU *pdu);//处理添加好友请求
 public slots:
     void ShowConnect();//接收连接服务端的connect信号
     void ReceiveInfo();//接收服务端发送的信息

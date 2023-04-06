@@ -11,7 +11,7 @@ public:
     MyTcpServer();
     static MyTcpServer &ins();
     virtual void incomingConnection(qintptr handle);
-
+    MyTcpSocket *GetTcpSocketByName(QString frient_name);
 public slots:
     void DeleteSocket(MyTcpSocket *mytcpsocket);
 private:

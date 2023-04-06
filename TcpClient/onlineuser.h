@@ -16,6 +16,9 @@ public:
     ~OnlineUser();
     static OnlineUser &ins();
     void SHowOnlineUser(PDU *pdu);
+private slots:
+    void on_add_friend_clicked();
+
 private:
     Ui::OnlineUser *ui;
 };
