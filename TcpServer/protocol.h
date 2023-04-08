@@ -23,6 +23,14 @@
 
 #define Delete_Friend_Success "Delete Friend Success"//删除好友成功
 #define Delete_Friend_Fail "Delete Friend Fail"//删除好友失败
+
+#define Create_Folder_Success "Create Folder Success" //创建文件夹成功
+#define Folder_Name_Exist "Folder Name Exist" //文件夹已存在
+#define Create_Folder_Fail "Create Folder Fail" //创建文件夹失败
+#define Path_Not_Exist "Path Not Exist" //文件路径不存在
+
+#define Delete_File_Success "Delete File Success" //删除文件成功
+#define Delete_File_Fail "Delete File Fail" //删除文件失败
 enum MSG_TYPE
 {
     MSG_TYPE_MIN = 0,
@@ -42,8 +50,24 @@ enum MSG_TYPE
     MSG_TYPE_FLUSH_FRIEND_LIST_RESPOND,//刷新好友列表响应
     MSG_TYPE_DELETE_FRIEND_REQUEST,//删除好友请求
     MSG_TYPE_DELETE_FRIEND_RESPOND,//删除好友响应
+    MSG_TYPE_USER_ONLINE_REQUEST,//好友是否在线请求
+    MSG_TYPE_USER_ONLINE_RESPOND,//好友是否在线响应
+    MSG_TYPE_PRIVATE_CHAT_REQUEST,//私聊信息请求
+    MSG_TYPE_GROUP_CHAT_REQUEST,//群聊信息请求
+    MSG_TYPE_CREATE_FOLDER_REQUEST,//创建文件夹请求
+    MSG_TYPE_CREATE_FOLDER_RESPOND,//创建文件夹响应
+    MSG_TYPE_FLUSH_FOLDER_REQUEST,//刷新文件夹请求
+    MSG_TYPE_FLUSH_FOLDER_RESPOND,//刷新文件夹响应
+    MSG_TYPE_DELETE_FOLDER_REQUEST,//删除文件夹请求
+    MSG_TYPE_DELETE_FLODER_RESPOND,//删除文件夹响应
     MSG_TYPE_MAX = 0x00ffffff,
 };
+
+struct FileInfo{
+    char file_name[32];
+    int file_type;
+};
+
 struct PDU//通讯协议
 {
     uint pdu_len;//总的协议数据单元的大小

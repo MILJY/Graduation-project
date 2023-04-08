@@ -176,6 +176,23 @@ QStringList MySql::HandleFlushFriendList(const QString name)
     return result;
 }
 
+QStringList MySql::HandleAllOnlineFriend(const QString name)
+{
+    QStringList result;
+    result.clear();
+    if(name == NULL)
+        return result;
+    int name_id = GetIdByName(name);
+    QString m_sql = QString("select name from userinfo where ((online = 1 ) and (id in (select id from userfriend where friendid = %1))) UNION (select name from userinfo where ((online = 1 ) and (id in (select friendid from userfriend where id = %2))))").arg(name_id).arg(name_id);
+    QSqlQuery query;
+    query.exec(m_sql);
+    while(query.next())
+    {
+        result.append(query.value(0).toString());
+    }
+    return result;
+}
+
 bool MySql::HandleDeleteFriend(const QString login_name, const QString friend_name)
 {
     if(login_name == NULL || friend_name == NULL)
@@ -185,4 +202,10 @@ bool MySql::HandleDeleteFriend(const QString login_name, const QString friend_na
     QString m_sql = QString("delete from userfriend where id in (%1,%2) and friendid in (%3,%4)").arg(login_name_id).arg(friend_name_id).arg(friend_name_id).arg(login_name_id);
     QSqlQuery query;
     return query.exec(m_sql);
+}
+
+int MySql::HandleUserIsOnline(const QString name)
+{
+    return HandleSearchUser(name);
+
 }

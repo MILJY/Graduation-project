@@ -16,24 +16,30 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    fileoperation.cpp \
     friendchat.cpp \
     main.cpp \
     mainwindow.cpp \
     onlineuser.cpp \
+    privatechat.cpp \
     protocol.cpp \
     tcpclient.cpp
 
 HEADERS += \
+    fileoperation.h \
     friendchat.h \
     mainwindow.h \
     onlineuser.h \
+    privatechat.h \
     protocol.h \
     tcpclient.h
 
 FORMS += \
+    fileoperation.ui \
     friendchat.ui \
     mainwindow.ui \
     onlineuser.ui \
+    privatechat.ui \
     tcpclient.ui
 
 # Default rules for deployment.

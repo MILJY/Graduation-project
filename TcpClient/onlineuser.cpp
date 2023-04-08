@@ -38,21 +38,29 @@ void OnlineUser::SHowOnlineUser(PDU *pdu)
 void OnlineUser::on_add_friend_clicked()
 {
     QListWidgetItem *item = ui->online_user->currentItem();
-    QString friend_name = item->text();
-    if(friend_name == TcpClient::ins().GetLoginName())
+    if(item == NULL)
     {
-        QMessageBox::critical(this, "错误", "不能添加自己，操作失败！");
+        QMessageBox::information(this, "提示", "请选择要添加的好友");
     }
     else
     {
-        QString login_name = TcpClient::ins().GetLoginName();
-        PDU *pdu = mkPDU(0);
-        pdu->msg_type = MSG_TYPE_ADD_USER_REQUEST;
-        memcpy(pdu->ca_data, login_name.toStdString().c_str(), login_name.size());
-        memcpy(pdu->ca_data + 32, friend_name.toStdString().c_str(), friend_name.size());
-        TcpClient::ins().GetTcpSocket().write((char *)pdu, pdu->pdu_len);
-        free(pdu);
-        pdu = NULL;
+        QString friend_name = item->text();
+        if(friend_name == TcpClient::ins().GetLoginName())
+        {
+            QMessageBox::critical(this, "错误", "不能添加自己，操作失败！");
+        }
+        else
+        {
+            QString login_name = TcpClient::ins().GetLoginName();
+            PDU *pdu = mkPDU(0);
+            pdu->msg_type = MSG_TYPE_ADD_USER_REQUEST;
+            memcpy(pdu->ca_data, login_name.toStdString().c_str(), login_name.size());
+            memcpy(pdu->ca_data + 32, friend_name.toStdString().c_str(), friend_name.size());
+            TcpClient::ins().GetTcpSocket().write((char *)pdu, pdu->pdu_len);
+            free(pdu);
+            pdu = NULL;
+        }
     }
+
     hide();
 }

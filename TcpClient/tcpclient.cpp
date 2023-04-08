@@ -3,6 +3,7 @@
 #include "mainwindow.h"
 #include "onlineuser.h"
 #include "friendchat.h"
+#include "fileoperation.h"
 TcpClient::TcpClient(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::TcpClient)
@@ -86,6 +87,31 @@ void TcpClient::ReceiveInfo()
         QMessageBox::information(this, "删除好友", pdu->ca_data);
         break;
     }
+    case MSG_TYPE_USER_ONLINE_RESPOND:
+    {
+        FriendChat::ins().HandlePrivateChat(pdu);
+        break;
+    }
+    case MSG_TYPE_PRIVATE_CHAT_REQUEST:
+    {
+        HandlePrivateChatRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_GROUP_CHAT_REQUEST:
+    {
+        HandleGroupChatRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_CREATE_FOLDER_RESPOND:
+    {
+        QMessageBox::information(this, "Create Folder", pdu->ca_data);
+        break;
+    }
+    case MSG_TYPE_FLUSH_FOLDER_RESPOND:
+    {
+        FileOperation::ins().FlushFolder(pdu);
+        break;
+    }
     default:
             break;
     }
@@ -134,6 +160,11 @@ QString TcpClient::GetLoginName()
     return login_name;
 }
 
+QString TcpClient::GetCurrentPath()
+{
+    return current_path;
+}
+
 void TcpClient::SendMsgToServer(uint msg_type)
 {
     QString str_name = ui->edit_name->text();
@@ -178,7 +209,7 @@ void TcpClient::HandleLoginRespond(PDU *pdu)
 {
     if(strcmp(pdu->ca_data, Login_Success) == 0)
     {
-
+        current_path = QString("./File/%1").arg(login_name);
         QMessageBox::information(this, "Login", Login_Success);
         MainWindow::ins().show();
         this->hide();
@@ -193,17 +224,17 @@ void TcpClient::HandleSearchUserRespond(PDU *pdu)
 {
     if(strcmp(pdu->ca_data, Search_User_fail) == 0)
     {
-        QMessageBox::information(this, "查找用户", QString("%1 does not exist!").arg(FriendChat::ins().search_name));
+        QMessageBox::information(this, "查找用户", QString("%1 does not exist!").arg(FriendChat::ins().GetSerachName()));
     }
     else
     {
         if(strcmp(pdu->ca_data, Search_User_Online) == 0)
         {
-            QMessageBox::information(this, "查找用户", QString("%1 online!").arg(FriendChat::ins().search_name));
+            QMessageBox::information(this, "查找用户", QString("%1 online!").arg(FriendChat::ins().GetSerachName()));
         }
         else
         {
-            QMessageBox::information(this, "查找用户", QString("%1 offline!").arg(FriendChat::ins().search_name));
+            QMessageBox::information(this, "查找用户", QString("%1 offline!").arg(FriendChat::ins().GetSerachName()));
         }
     }
 }
@@ -225,6 +256,44 @@ void TcpClient::HandleAddUserRequest(PDU *pdu)
     free(res_pdu);
     res_pdu = NULL;
 
+}
+
+void TcpClient::HandlePrivateChatRequest(PDU *pdu)
+{
+    char friend_name[32] = {'\0'};
+    strncpy(friend_name, pdu->ca_data, 32);
+    PrivateChat *m_privatechat = FriendChat::ins().GetPrivateChatByFriendName(friend_name);
+    if(m_privatechat == NULL)
+    {
+        m_privatechat = new PrivateChat;
+        m_privatechat->SetFriendName(friend_name);
+        m_privatechat->SetLoginName(TcpClient::ins().GetLoginName());
+        QString title = TcpClient::ins().GetLoginName();
+        title += " to ";
+        title += friend_name;
+        m_privatechat->SetTitle(title);
+        FriendChat::ins().InsertPrivateChat(m_privatechat);
+        //m_privatechat_lsit.append(m_privatechat);
+
+    }
+
+    m_privatechat->GetMsgInfo()->append(QString("%1:%2").arg(friend_name).arg((char *)(pdu->ca_msg)));
+    if(m_privatechat->isHidden())
+        m_privatechat->show();
+    if(m_privatechat->isMinimized())
+        m_privatechat->showNormal();
+}
+
+void TcpClient::HandleGroupChatRequest(PDU *pdu)
+{
+    char friend_name[32] = {'\0'};
+    strncpy(friend_name, pdu->ca_data, 32);
+
+    FriendChat::ins().GetMsgInfo()->append(QString("%1:%2").arg(friend_name).arg((char *)(pdu->ca_msg)));
+    if( FriendChat::ins().isHidden())
+        FriendChat::ins().show();
+    if(FriendChat::ins().isMinimized())
+        FriendChat::ins().showNormal();
 }
 
 

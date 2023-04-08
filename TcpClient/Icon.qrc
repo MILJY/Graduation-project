@@ -1,6 +1,5 @@
 <RCC>
-    <qresource prefix="/config">
-        <file>Client.config</file>
+    <qresource prefix="/Icon">
         <file>icon/file.jpeg</file>
         <file>icon/folder.png</file>
     </qresource>

@@ -23,7 +23,10 @@ public:
     int HandleAddUser(const QString login_name, const QString friend_name);//添加好友, -1为系统问题，0为已经是好友，1为对方不存在，2为对方不在线，3为对方在线
     void HandleAgreeAddUser(const QString login_name, const QString friend_name);//同意添加好友
     QStringList HandleFlushFriendList(const QString name);//刷新好友列表
+    QStringList HandleAllOnlineFriend(const QString name);//查找所有在线好友
     bool HandleDeleteFriend(const QString login_name, const QString friend_name);//删除好友
+    int HandleUserIsOnline(const QString name);//判断用户是否在线
+
 signals:
 
 private:

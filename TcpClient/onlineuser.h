@@ -1,6 +1,5 @@
 #ifndef ONLINEUSER_H
 #define ONLINEUSER_H
-
 #include <QWidget>
 #include "protocol.h"
 namespace Ui {

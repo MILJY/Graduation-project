@@ -25,6 +25,8 @@ void MyTcpSocket::HandleReginstRequest(PDU *pdu)
     {
 
         strcpy(res_pdu->ca_data, Register_Success);
+        QDir dir;
+        dir.mkdir(QString("./File/%1").arg(str_name));
 
     }
     else
@@ -146,6 +148,27 @@ void MyTcpSocket::SendAddUserRequest(QString friend_name)
     res_pdu = NULL;
 }
 
+void MyTcpSocket::SendMsgToFriend(PDU *pdu)
+{
+    char friend_name[32] = {'\0'};
+    strncpy(friend_name, pdu->ca_data + 32, 32);
+    MyTcpSocket *friend_tcpsocket = MyTcpServer::ins().GetTcpSocketByName(friend_name);
+    friend_tcpsocket->write((char *)pdu, pdu->pdu_len);
+
+}
+
+void MyTcpSocket::SendMsgToAllOnlineFriend(PDU *pdu)
+{
+    char login_name[32] = {'\0'};
+    strncpy(login_name, pdu->ca_data, 32);
+    QStringList search_result = MySql::ins().HandleAllOnlineFriend(pdu->ca_data);
+    for(int i = 0; i < search_result.size(); i++)
+    {
+        MyTcpSocket *friend_tcpsocket = MyTcpServer::ins().GetTcpSocketByName(search_result[i]);
+        friend_tcpsocket->write((char *)pdu, pdu->pdu_len);
+    }
+}
+
 void MyTcpSocket::SendAddUserResult(QString friend_name, uint msg_type)
 {
     MyTcpSocket *friend_tcpsocket = MyTcpServer::ins().GetTcpSocketByName(friend_name);
@@ -203,6 +226,100 @@ void MyTcpSocket::HandleDeleteFriendRequest(PDU *pdu)
     res_pdu = NULL;
 }
 
+void MyTcpSocket::HandleUserIsOnlineRequest(PDU *pdu)
+{
+    int is_online = MySql::ins().HandleSearchUser(pdu->ca_data);
+    PDU *res_pdu = mkPDU(0);
+    res_pdu->msg_type = MSG_TYPE_USER_ONLINE_RESPOND;
+    if(is_online == -1)
+    {
+        strcpy(res_pdu->ca_data, Search_User_fail);
+    }
+    else
+    {
+        if(is_online == 0)
+        {
+            strcpy(res_pdu->ca_data, Search_User_Offline);
+        }
+        else
+        {
+            strcpy(res_pdu->ca_data, Search_User_Online);
+        }
+    }
+    strcpy(res_pdu->ca_data + 32, pdu->ca_data);
+    this->write((char *)res_pdu, res_pdu->pdu_len);
+    free(res_pdu);
+    res_pdu = NULL;
+}
+
+void MyTcpSocket::HandleCreateFolderRequest(PDU *pdu)
+{
+    QDir dir;
+    QString folder_name = QString("%1").arg(pdu->ca_data);
+    QString current_path = QString("%1").arg((char *)(pdu->ca_msg));
+    bool res = dir.exists(current_path);
+    PDU *res_pdu = mkPDU(0);
+    res_pdu->msg_type = MSG_TYPE_CREATE_FOLDER_RESPOND;
+    if(res)
+    {
+
+        QString new_current_path = current_path + "/" + folder_name;
+        if(dir.exists(new_current_path))
+        {
+            strcpy(res_pdu->ca_data, Folder_Name_Exist);
+        }
+        else
+        {
+            dir.mkdir(new_current_path);
+            strcpy(res_pdu->ca_data, Create_Folder_Success);
+        }
+    }
+    else
+    {
+        strcpy(res_pdu->ca_data, Create_Folder_Fail);
+    }
+    this->write((char *)res_pdu, res_pdu->pdu_len);
+    free(res_pdu);
+    res_pdu = NULL;
+}
+
+void MyTcpSocket::HandleFlushFolderRequest(PDU *pdu)
+{
+    QString current_path = QString("%1").arg((char *)(pdu->ca_msg));
+    QDir dir;
+    PDU *res_pdu = NULL;
+    if(!dir.exists(current_path))
+    {
+        res_pdu = mkPDU(0);
+        strcpy(res_pdu->ca_data, Path_Not_Exist);
+    }
+    else
+    {
+        dir.setPath(current_path);
+        QFileInfoList fileinfo_list = dir.entryInfoList();
+        int file_cnt = fileinfo_list.size();
+        res_pdu = mkPDU(file_cnt * sizeof(FileInfo));
+        for(int  i = 0; i < file_cnt; i++)
+        {
+            QString file_name = fileinfo_list[i].fileName();
+            FileInfo *fileinfo = (FileInfo *)(res_pdu->ca_msg) + i;
+            memcpy(fileinfo->file_name, file_name.toStdString().c_str(), file_name.size());
+            if(fileinfo_list[i].isDir())
+                fileinfo->file_type = 0;
+            else fileinfo->file_type = 1;
+        }
+    }
+    res_pdu->msg_type = MSG_TYPE_FLUSH_FOLDER_RESPOND;
+    this->write((char *)res_pdu, res_pdu->pdu_len);
+    free(res_pdu);
+    res_pdu = NULL;
+}
+
+void MyTcpSocket::HandleDeleteFileRequest(PDU *pdu)
+{
+
+}
+
 void MyTcpSocket::RecvMsg()
 {
     uint pdu_len = 0;
@@ -258,6 +375,36 @@ void MyTcpSocket::RecvMsg()
     case MSG_TYPE_DELETE_FRIEND_REQUEST:
     {
         HandleDeleteFriendRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_USER_ONLINE_REQUEST:
+    {
+        HandleUserIsOnlineRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_PRIVATE_CHAT_REQUEST:
+    {
+        SendMsgToFriend(pdu);
+        break;
+    }
+    case MSG_TYPE_GROUP_CHAT_REQUEST:
+    {
+        SendMsgToAllOnlineFriend(pdu);
+        break;
+    }
+    case MSG_TYPE_CREATE_FOLDER_REQUEST:
+    {
+        HandleCreateFolderRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_FLUSH_FOLDER_REQUEST:
+    {
+        HandleFlushFolderRequest(pdu);
+        break;
+    }
+    case MSG_TYPE_DELETE_FLODER_RESPOND:
+    {
+        HandleDeleteFileRequest(pdu);
         break;
     }
     default:
