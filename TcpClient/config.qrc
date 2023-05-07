@@ -3,5 +3,7 @@
         <file>Client.config</file>
         <file>icon/file.jpeg</file>
         <file>icon/folder.png</file>
+        <file>icon/111.jpg</file>
+        <file>icon/222.jpg</file>
     </qresource>
 </RCC>

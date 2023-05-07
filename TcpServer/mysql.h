@@ -26,7 +26,7 @@ public:
     QStringList HandleAllOnlineFriend(const QString name);//查找所有在线好友
     bool HandleDeleteFriend(const QString login_name, const QString friend_name);//删除好友
     int HandleUserIsOnline(const QString name);//判断用户是否在线
-
+    void HandleLogout(const QString name);//处理注销操作
 signals:
 
 private:

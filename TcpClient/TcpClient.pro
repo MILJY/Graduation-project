@@ -23,6 +23,7 @@ SOURCES += \
     onlineuser.cpp \
     privatechat.cpp \
     protocol.cpp \
+    sharefile.cpp \
     tcpclient.cpp
 
 HEADERS += \
@@ -32,6 +33,7 @@ HEADERS += \
     onlineuser.h \
     privatechat.h \
     protocol.h \
+    sharefile.h \
     tcpclient.h
 
 FORMS += \
@@ -40,6 +42,7 @@ FORMS += \
     mainwindow.ui \
     onlineuser.ui \
     privatechat.ui \
+    sharefile.ui \
     tcpclient.ui
 
 # Default rules for deployment.

@@ -209,3 +209,13 @@ int MySql::HandleUserIsOnline(const QString name)
     return HandleSearchUser(name);
 
 }
+
+void MySql::HandleLogout(const QString name)
+{
+    int name_id = GetIdByName(name);
+    QString m_sql = QString("delete from userfriend where id = %1 or friendid = %2").arg(name_id).arg(name_id);
+    QSqlQuery query;
+    query.exec(m_sql);
+    m_sql = QString("delete from userinfo where id = %1").arg(name_id);
+    query.exec(m_sql);
+}

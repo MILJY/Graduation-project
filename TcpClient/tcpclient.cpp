@@ -4,6 +4,7 @@
 #include "onlineuser.h"
 #include "friendchat.h"
 #include "fileoperation.h"
+#include "sharefile.h"
 TcpClient::TcpClient(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::TcpClient)
@@ -26,97 +27,187 @@ void TcpClient::ShowConnect()
 
 void TcpClient::ReceiveInfo()
 {
-    uint pdu_len = 0;
-    m_tcpsocket.read((char *)&pdu_len, sizeof(uint));
-    uint msg_len = pdu_len - sizeof(PDU);
-    PDU *pdu = mkPDU(msg_len);
-    m_tcpsocket.read((char *)pdu + sizeof(uint), pdu_len - sizeof(uint));
-    //qDebug() << pdu->pdu_len << pdu->msg_type << pdu->ca_data << pdu->msg_len << (char *)pdu->ca_msg;
-    switch(pdu->msg_type)
+    if(FileOperation::ins().GetDownload() == false)
     {
-    //注册
-    case MSG_TYPE_REGIST_RESPOND:
-    {
-        HandleRegistRespond(pdu);
+        uint pdu_len = 0;
+        m_tcpsocket.read((char *)&pdu_len, sizeof(uint));
+        uint msg_len = pdu_len - sizeof(PDU);
+        PDU *pdu = mkPDU(msg_len);
+        m_tcpsocket.read((char *)pdu + sizeof(uint), pdu_len - sizeof(uint));
+        //qDebug() << pdu->pdu_len << pdu->msg_type << pdu->ca_data << pdu->msg_len << (char *)pdu->ca_msg;
+        switch(pdu->msg_type)
+        {
+        //注册
+        case MSG_TYPE_REGIST_RESPOND:
+        {
+            HandleRegistRespond(pdu);
 
-        break;
-    }
-    //登录
-    case MSG_TYPE_LOGIN_RESPOND:
-    {
-        HandleLoginRespond(pdu);
-        break;
-    }
-    case MSG_TYPE_SEARCH_ONLINE_USER_RESPOND:
-    {
-        OnlineUser::ins().SHowOnlineUser(pdu);
-        break;
-    }
-    case MSG_TYPE_SERACH_USER_RESPOND:
-    {
-        HandleSearchUserRespond(pdu);
-        break;
-    }
-    case MSG_TYPE_ADD_USER_RESPOND:
-    {
-        QMessageBox::information(this, "添加好友", pdu->ca_data);
-        break;
-    }
-    case MSG_TYPE_ADD_USER_REQUEST:
-    {
-        HandleAddUserRequest(pdu);
-        break;
-    }
-    case MSG_TYPE_AGREE_ADD_USER:
-    {
-        QMessageBox::information(this, "添加好友结果", QString("%1 同意了你的申请！").arg(pdu->ca_data));
-        break;
-    }
-    case MSG_TYPE_REFUSE_ADD_USER:
-    {
-        QMessageBox::information(this, "添加好友结果", QString("%1 拒绝了你的申请！").arg(pdu->ca_data));
-        break;
-    }
-    case MSG_TYPE_FLUSH_FRIEND_LIST_RESPOND:
-    {
-        FriendChat::ins().FlushFriendList(pdu);
-        break;
-    }
-    case MSG_TYPE_DELETE_FRIEND_RESPOND:
-    {
-        QMessageBox::information(this, "删除好友", pdu->ca_data);
-        break;
-    }
-    case MSG_TYPE_USER_ONLINE_RESPOND:
-    {
-        FriendChat::ins().HandlePrivateChat(pdu);
-        break;
-    }
-    case MSG_TYPE_PRIVATE_CHAT_REQUEST:
-    {
-        HandlePrivateChatRequest(pdu);
-        break;
-    }
-    case MSG_TYPE_GROUP_CHAT_REQUEST:
-    {
-        HandleGroupChatRequest(pdu);
-        break;
-    }
-    case MSG_TYPE_CREATE_FOLDER_RESPOND:
-    {
-        QMessageBox::information(this, "Create Folder", pdu->ca_data);
-        break;
-    }
-    case MSG_TYPE_FLUSH_FOLDER_RESPOND:
-    {
-        FileOperation::ins().FlushFolder(pdu);
-        break;
-    }
-    default:
             break;
+        }
+        //登录
+        case MSG_TYPE_LOGIN_RESPOND:
+        {
+            HandleLoginRespond(pdu);
+            break;
+        }
+        case MSG_TYPE_SEARCH_ONLINE_USER_RESPOND:
+        {
+            OnlineUser::ins().SHowOnlineUser(pdu);
+            break;
+        }
+        case MSG_TYPE_SERACH_USER_RESPOND:
+        {
+            HandleSearchUserRespond(pdu);
+            break;
+        }
+        case MSG_TYPE_ADD_USER_RESPOND:
+        {
+            QMessageBox::information(this, "添加好友", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_ADD_USER_REQUEST:
+        {
+            HandleAddUserRequest(pdu);
+            break;
+        }
+        case MSG_TYPE_AGREE_ADD_USER:
+        {
+            QMessageBox::information(this, "添加好友结果", QString("%1 同意了你的申请！").arg(pdu->ca_data));
+            break;
+        }
+        case MSG_TYPE_REFUSE_ADD_USER:
+        {
+            QMessageBox::information(this, "添加好友结果", QString("%1 拒绝了你的申请！").arg(pdu->ca_data));
+            break;
+        }
+        case MSG_TYPE_FLUSH_FRIEND_LIST_RESPOND:
+        {
+            FriendChat::ins().FlushFriendList(pdu);
+            break;
+        }
+        case MSG_TYPE_DELETE_FRIEND_RESPOND:
+        {
+            QMessageBox::information(this, "删除好友", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_USER_ONLINE_RESPOND:
+        {
+            FriendChat::ins().HandlePrivateChat(pdu);
+            break;
+        }
+        case MSG_TYPE_PRIVATE_CHAT_REQUEST:
+        {
+            HandlePrivateChatRequest(pdu);
+            break;
+        }
+        case MSG_TYPE_GROUP_CHAT_REQUEST:
+        {
+            HandleGroupChatRequest(pdu);
+            break;
+        }
+        case MSG_TYPE_CREATE_FOLDER_RESPOND:
+        {
+            QMessageBox::information(this, "Create Folder", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_FLUSH_FOLDER_RESPOND:
+        {
+            FileOperation::ins().FlushFolder(pdu);
+            break;
+        }
+        case MSG_TYPE_DELETE_FLODER_RESPOND:
+        {
+            QMessageBox::information(this, "Delete File", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_RENAME_FILE_RESPOND:
+        {
+            QMessageBox::information(this, "Rename File", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_ENTRY_FILE_RESPOND:
+        {
+            QMessageBox::information(this, "Entry File", pdu->ca_data);
+            if(strcmp(pdu->ca_data, Entry_File_Success) == 0)
+            {
+                current_path = QString("%1").arg((char *)(pdu->ca_msg));
+                FileOperation::ins().EntryFile();
+            }
+            break;
+        }
+        case MSG_TYPE_RETURN_PATH_RESPOND:
+        {
+            QMessageBox::information(this, "Return Path", pdu->ca_data);
+            if(strcmp(pdu->ca_data, Return_Path_Success) == 0)
+            {
+                current_path = QString("%1").arg((char *)(pdu->ca_msg));
+                FileOperation::ins().ReturnPath();
+            }
+            break;
+        }
+        case MSG_TYPE_UPLOAD_FILE_RESPOND:
+        {
+            QMessageBox::information(this, "Upload File", pdu->ca_data);
+            if(strcmp(pdu->ca_data, Upload_File_Start) == 0)
+            {
+                FileOperation::ins().StartTimer();
+            }
+            break;
+        }
+        case MSG_TYPE_DOWNLOAD_FILE_RESPOND:
+        {
+            QMessageBox::information(this, "Download File", "Download File Start");
+            FileOperation::ins().HandleDownloadFileRespond(pdu);
+            break;
+        }
+        case MSG_TYPE_LOGOUT_RESPOND:
+        {
+            QMessageBox::information(this, "Logout", pdu->ca_data);
+            break;
+        }
+        case MSG_TYPE_ONLINE_FRIEND_RESPOND:
+        {
+            ShareFile::ins().FlushOnlineFriend(pdu);
+            break;
+        }
+        case MSG_TYPE_SHARE_FILE_NOTE:
+        {
+            char friend_name[32] = {'\0'};
+            strncpy(friend_name, pdu->ca_data, 32);
+            QString share_file_path = QString("%1").arg((char *)(pdu->ca_msg));
+            QString info = QString("%1 Share A File, Do you Accept").arg(friend_name);
+            int res = QMessageBox::question(this, "Share File", info);
+            if(res == QMessageBox::Yes)
+            {
+                PDU *res_pdu = mkPDU(share_file_path.size() + 1);
+                res_pdu->msg_type = MSG_TYPE_SHARE_FILE_NOTE_RESPOND;
+                memcpy((char *)(res_pdu->ca_msg), share_file_path.toStdString().c_str(), share_file_path.size());
+                memcpy(res_pdu->ca_data, TcpClient::ins().GetLoginName().toStdString().c_str(), TcpClient::ins().GetLoginName().size());
+                m_tcpsocket.write((char *)res_pdu, res_pdu->pdu_len);
+                free(res_pdu);
+                res_pdu = NULL;
+            }
+            break;
+        }
+        case MSG_TYPE_SHARE_FILE_RESPOND:
+        {
+            QMessageBox::information(this, "Share File", pdu->ca_data);
+            break;
+        }
+        default:
+                break;
+        }
+        free(pdu);
+        pdu = NULL;
     }
-    free(pdu);
-    pdu = NULL;
+    else
+    {
+
+        QByteArray buff = m_tcpsocket.readAll();
+
+        FileOperation::ins().DownloadFileData(buff);
+    }
+
 }
 void TcpClient::LoadConfig()
 {
@@ -177,8 +268,14 @@ void TcpClient::SendMsgToServer(uint msg_type)
             QMessageBox::critical(this, "Login", "Login Fail: Account And Password Cannot Be Empty");
         }
         if(msg_type == MSG_TYPE_REGIST_REQUEST)
-            QMessageBox::critical(this, "Register", "Register Fail: Account And Password Cannot Be Empty");
+        {
 
+            QMessageBox::critical(this, "Register", "Register Fail: Account And Password Cannot Be Empty");
+        }
+        if(msg_type == MSG_TYPE_LOGOUT_REQUEST)
+        {
+            QMessageBox::critical(this, "Logout", "Logout Fail: Account And Password Cannot Be Empty");
+        }
     }
     else
     {
@@ -309,5 +406,5 @@ void TcpClient::on_register_btn_clicked()
 
 void TcpClient::on_logout_btn_clicked()
 {
-
+    SendMsgToServer(MSG_TYPE_LOGOUT_REQUEST);
 }
