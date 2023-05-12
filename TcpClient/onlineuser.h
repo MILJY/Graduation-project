@@ -1,6 +1,7 @@
 #ifndef ONLINEUSER_H
 #define ONLINEUSER_H
 #include <QWidget>
+#include <QLabel>
 #include "protocol.h"
 namespace Ui {
 class OnlineUser;

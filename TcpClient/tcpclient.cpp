@@ -10,6 +10,13 @@ TcpClient::TcpClient(QWidget *parent)
     , ui(new Ui::TcpClient)
 {
     ui->setupUi(this);
+    QLabel *background = new QLabel(this);
+    // 加载图片并设置背景
+    background->setPixmap(QPixmap(":/config/icon/222.jpg"));
+    // 设置背景图片的拉伸方式
+    background->setScaledContents(true);
+    // 将背景设置为窗口底层
+    background->lower();
     LoadConfig();
     connect(&m_tcpsocket, SIGNAL(readyRead()), this, SLOT(ReceiveInfo()));//收信息
     connect(&m_tcpsocket, SIGNAL(connected()), this, SLOT(ShowConnect()));//与服务端连接

@@ -73,7 +73,7 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3"/>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>390</x>

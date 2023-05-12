@@ -2,6 +2,7 @@
 #define SHAREFILE_H
 
 #include <QWidget>
+#include <QLabel>
 #include "protocol.h"
 namespace Ui {
 class ShareFile;

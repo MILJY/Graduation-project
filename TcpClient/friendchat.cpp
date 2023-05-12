@@ -7,8 +7,16 @@ FriendChat::FriendChat(QWidget *parent) :
     ui(new Ui::FriendChat)
 {
     ui->setupUi(this);
+    QLabel *background = new QLabel(this);
+        // 加载图片并设置背景
+    background->setPixmap(QPixmap(":/config/icon/222.jpg"));
+        // 设置背景图片的拉伸方式
+    background->setScaledContents(true);
+        // 将背景设置为窗口底层
+    background->lower();
     ui->all_msg->setReadOnly(true);
     ui->all_msg->setFocusPolicy(Qt::NoFocus);
+
     setWindowTitle(TcpClient::ins().GetLoginName());
 }
 

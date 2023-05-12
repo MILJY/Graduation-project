@@ -5,5 +5,8 @@
         <file>icon/folder.png</file>
         <file>icon/111.jpg</file>
         <file>icon/222.jpg</file>
+        <file>icon/555.jpg</file>
+        <file>icon/666.jpg</file>
+        <file>icon/777.jpg</file>
     </qresource>
 </RCC>

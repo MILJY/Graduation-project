@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>523</width>
-    <height>458</height>
+    <width>532</width>
+    <height>439</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>TcpClient</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <widget class="QPushButton" name="logout_btn">
    <property name="geometry">

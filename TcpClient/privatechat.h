@@ -2,6 +2,7 @@
 #define RRIVATECHAT_H
 #include <QTextEdit>
 #include <QWidget>
+#include <QLabel>
 #include <QDebug>
 namespace Ui {
 class PrivateChat;
